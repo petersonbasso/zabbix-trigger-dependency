@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script para adicionar dependencia de trigger
 
-URL='https://snoc.procempa.com.br/zabbix/api_jsonrpc.php'
+URL='https://url_zabbix/zabbix/api_jsonrpc.php'
 HEADER='Content-Type:application/json'
 
 read -p "Digite seu usuário Zabbix: " USER
@@ -147,11 +147,6 @@ done
 '
 
 TRIGGER_PAI=$(curl -s -X POST -H "$HEADER" -d "$JSON" "$URL" | jq '.result[].triggerid' | tr -d "\"")
-
-#[ -f "$TRIGGER_FILHO" ] || read -p "Não foi selecionado nenhum host filho com trigger de indisponiblidade"; exit 3
-
-#[ -z $TRIGGER_PAI ] && read -p "Não foi possível encontrar trigger de indisponibilidade para o host pai"; exit 4 
-
 
 
 for j in $(cat $TRIGGER_FILHO | tr -d "\"")
