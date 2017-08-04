@@ -1,0 +1,1 @@
+# zabbix-trigger-dependency
