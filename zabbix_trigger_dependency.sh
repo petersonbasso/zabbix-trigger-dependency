@@ -13,15 +13,7 @@ TRIGGER_FILHO=$(mktemp)
 HOST_PAI=$(mktemp)
 TRIGGER_PAI=$(mktemp)
 
-
-
-#USER='"Admin"'
-#PASS='"zabbixnoc"'
 GRUPO=$1
-
-
-rm -rf /tmp/depzab_*
-
 
 autenticacao()
 {
@@ -39,24 +31,34 @@ autenticacao()
     curl -s -X POST -H "$HEADER" -d "$JSON" "$URL" | cut -d '"' -f8
 }
 TOKEN=$(autenticacao)
-#echo $TOKEN
 
-#read -p "pausa"
 trigger_get()
 {
     JSON='
-    {
-        "jsonrpc": "2.0",
-        "method": "trigger.get",
-        "params": {
-            "output":["description"], "group":"'$GRUPO'","expandDescription":"True","filter": {"value": "1"},"skipDependent":"True", "search":{"description":"unavailable"},"active":"True"
-        },
-        "auth": "'$TOKEN'",
-        "id": 1        
-    }
+	    {
+		"jsonrpc": "2.0",
+		"method": "trigger.get",
+		"params": {
+	    	"output": [
+			"description"
+	    	],
+	    	"group": "'$GRUPO'",
+	    	"expandDescription": "True",
+	    	"filter": {
+			"value": "1"
+	    	},
+	    	"skipDependent": "True",
+	    	"search": {
+		"description": "unavailable"
+		},
+	    	"active": "True"
+		},
+        	"auth": "'$TOKEN'",
+        	"id": 1        
+	}
     '
     curl -s -X POST -H "$HEADER" -d "$JSON" "$URL" | python -m json.tool | grep unavailable | wc -l
-}
+    }
 
 menu()
 {
@@ -149,42 +151,42 @@ done
 TRIGGER_PAI=$(curl -s -X POST -H "$HEADER" -d "$JSON" "$URL" | jq '.result[].triggerid' | tr -d "\"")
 
 
-for j in $(cat $TRIGGER_FILHO | tr -d "\"")
- 
-do
+	for j in $(cat $TRIGGER_FILHO | tr -d "\"")
 
-	addDependencies='{
-        "jsonrpc": "2.0",
-        "method": "trigger.adddependencies",
-        "params": {
-    		"triggerid":"'$j'",
-		"dependsOnTriggerid": "'$TRIGGER_PAI'"
-},
-        "auth": "'$TOKEN'",
-        "id": 1
-    }
+	do
 
-'
+		addDependencies='{
+		"jsonrpc": "2.0",
+		"method": "trigger.adddependencies",
+		"params": {
+			"triggerid":"'$j'",
+			"dependsOnTriggerid": "'$TRIGGER_PAI'"
+		},
+			"auth": "'$TOKEN'",
+			"id": 1
+		    }
 
-
-	deleteDependencies='{
-        "jsonrpc": "2.0",
-        "method": "trigger.deletedependencies",
-        "params": {
-    		"triggerid":"'$j'"
-},
-        "auth": "'$TOKEN'",
-        "id": 1
-    }
-
-'
+		'
 
 
-curl -s -X POST -H "$HEADER" -d "$deleteDependencies" "$URL"
-curl -s -X POST -H "$HEADER" -d "$addDependencies" "$URL"
+			deleteDependencies='{
+			"jsonrpc": "2.0",
+			"method": "trigger.deletedependencies",
+			"params": {
+				"triggerid":"'$j'"
+		},
+			"auth": "'$TOKEN'",
+			"id": 1
+		}
+
+		'
 
 
-done
+		curl -s -X POST -H "$HEADER" -d "$deleteDependencies" "$URL"
+		curl -s -X POST -H "$HEADER" -d "$addDependencies" "$URL"
+
+
+	done
 
 
 done
